@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-
+/*
 public class PlayerController : MonoBehaviour {
 
 	public float speed;
@@ -23,5 +23,22 @@ public class PlayerController : MonoBehaviour {
 //		rb.AddRelativeForce (movement * speed);
 //		gameObject.transform.Rotate (new Vector3 (0.0f, moveHorizontal, 0.0f) * Time.deltaTime * 20.0f);
 		rb.AddForce(movement * speed);
+	}
+}*/
+public class PlayerController : MonoBehaviour{
+	public float movementSpeed = 10;
+	public GameObject player;
+
+	void Update(){
+		if (Input.GetKey (KeyCode.UpArrow)) {
+			Move (Vector3.left);
+		}
+	}
+	void Move(Vector3 direction){
+		var newDirection = Quaternion.LookRotation (Camera.main.transform.position - transform.position);
+		newDirection.x = 0;
+		newDirection.z = 0;
+		player.transform.rotation = Quaternion.Euler (newDirection);
+		transform.Translate (-direction * Time.deltaTime * movementSpeed, player.transform);
 	}
 }
