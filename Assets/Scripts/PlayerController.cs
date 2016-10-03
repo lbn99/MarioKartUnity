@@ -1,44 +1,45 @@
 ﻿using UnityEngine;
-using System.Collections;
-/*
-public class PlayerController : MonoBehaviour {
+using UnityEngine.Networking;
 
-	public float speed;
+public class PlayerController : NetworkBehaviour
+{
+	public GameObject bulletPrefab;
+	public Transform bulletSpawn;
 
-	private Rigidbody rb;
-
-	void Start ()
+	void Update()
 	{
-		rb = GetComponent<Rigidbody>();
-	}
+		if (!isLocalPlayer)
+		{
+			return;
+		}
 
-	void FixedUpdate ()
-	{
-		float moveHorizontal = Input.GetAxis ("Horizontal");
-		float moveVertical = Input.GetAxis ("Vertical");
+		var x = Input.GetAxis("Horizontal") * Time.deltaTime * 150.0f;
+		var z = Input.GetAxis("Vertical") * Time.deltaTime * 3.0f;
 
-		Vector3 movement = new Vector3 (moveHorizontal, 0.0f, moveVertical);
-//		Vector3 movement = new Vector3 (0.0f, 0.0f, moveVertical);
+		transform.Rotate(0, x, 0);
+		transform.Translate(0, 0, z);
 
-//		rb.AddRelativeForce (movement * speed);
-//		gameObject.transform.Rotate (new Vector3 (0.0f, moveHorizontal, 0.0f) * Time.deltaTime * 20.0f);
-		rb.AddForce(movement * speed);
-	}
-}*/
-public class PlayerController : MonoBehaviour{
-	public float movementSpeed = 10;
-	public GameObject player;
-
-	void Update(){
-		if (Input.GetKey (KeyCode.UpArrow)) {
-			Move (Vector3.left);
+		if (Input.GetKeyDown (KeyCode.Space)) 
+		{
+			CmdFire();
 		}
 	}
-	void Move(Vector3 direction){
-		var newDirection = Quaternion.LookRotation (Camera.main.transform.position - transform.position);
-		newDirection.x = 0;
-		newDirection.z = 0;
-		player.transform.rotation = Quaternion.Euler (newDirection);
-		transform.Translate (-direction * Time.deltaTime * movementSpeed, player.transform);
+
+	public override void OnStartLocalPlayer()
+	{
+		GetComponent<MeshRenderer>().material.color = Color.blue;
+	}
+
+	[Command]
+	void CmdFire()
+	{
+		var bullet = (GameObject)Instantiate(
+			bulletPrefab, 
+			bulletSpawn.position, 
+			bulletSpawn.rotation);
+		
+		bullet.GetComponent<Rigidbody> ().velocity = bullet.transform.forward * 6;
+		NetworkServer.Spawn(bullet);
+		Destroy (bullet, 2.0f);
 	}
 }
